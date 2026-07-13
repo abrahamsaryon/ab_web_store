@@ -3,7 +3,7 @@
 A full-stack e-commerce web application built with Next.js, Node.js/Express, and MySQL.
 
 ## Live URLs
-- **Frontend:** https://ab-webstore.vercel.app
+- **Frontend:** https://ab-web-store-gules.vercel.app
 - **Backend API:** https://ab-webstore-backend.onrender.com
 
 ## Tech Stack
