@@ -62,6 +62,7 @@ export default function OrderDetailPage() {
         <div className="text-sm text-gray-600 space-y-1">
           <p><span className="font-medium">Delivery to:</span> {order.shipping_address}</p>
           <p><span className="font-medium">Phone:</span> {order.phone}</p>
+          <p><span className="font-medium">Payment:</span> {order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : order.payment_method}</p>
           <p><span className="font-medium">Date:</span> {new Date(order.created_at).toLocaleString()}</p>
         </div>
       </div>

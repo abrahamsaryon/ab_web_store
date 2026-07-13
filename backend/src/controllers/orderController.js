@@ -1,7 +1,7 @@
 const pool = require("../config/db");
 
 const createOrder = async (req, res) => {
-  const { items, shipping_address, phone } = req.body;
+  const { items, shipping_address, phone, payment_method = 'cash_on_delivery' } = req.body;
   if (!items?.length || !shipping_address)
     return res.status(400).json({ message: "Items and shipping address required" });
 
@@ -18,8 +18,8 @@ const createOrder = async (req, res) => {
     }
 
     const [order] = await conn.query(
-      "INSERT INTO orders (user_id, total_amount, shipping_address, phone) VALUES (?, ?, ?, ?)",
-      [req.user.id, total, shipping_address, phone]
+      "INSERT INTO orders (user_id, total_amount, shipping_address, phone, payment_method) VALUES (?, ?, ?, ?, ?)",
+      [req.user.id, total, shipping_address, phone, payment_method]
     );
 
     for (const item of items) {

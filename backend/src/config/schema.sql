@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS orders (
   user_id INT,
   total_amount DECIMAL(10,2) NOT NULL,
   status ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
+  payment_method VARCHAR(50) DEFAULT 'cash_on_delivery',
   shipping_address TEXT NOT NULL,
   phone VARCHAR(20),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

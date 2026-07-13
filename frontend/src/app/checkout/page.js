@@ -10,7 +10,7 @@ export default function CheckoutPage() {
   const { cart, total, clearCart } = useCart();
   const { user } = useAuth();
   const router = useRouter();
-  const [form, setForm] = useState({ name: user?.name || "", email: user?.email || "", phone: "", address: "" });
+  const [form, setForm] = useState({ name: user?.name || "", email: user?.email || "", phone: "", address: "", payment_method: "cash_on_delivery" });
   const [loading, setLoading] = useState(false);
 
   if (cart.length === 0) { router.push("/cart"); return null; }
@@ -25,6 +25,7 @@ export default function CheckoutPage() {
         items: cart.map((i) => ({ product_id: i.id, quantity: i.quantity })),
         shipping_address: form.address,
         phone: form.phone,
+        payment_method: form.payment_method,
       });
       clearCart();
       router.push(`/orders/${res.data.order_id}?success=true`);
@@ -50,6 +51,28 @@ export default function CheckoutPage() {
             placeholder="Phone (e.g. +250 7XX XXX XXX)" className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           <textarea required value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })}
             placeholder="Delivery Address" rows={3} className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+
+          <div>
+            <h3 className="font-medium text-gray-700 mb-2">Payment Method</h3>
+            <div className="space-y-2">
+              <label className="flex items-center gap-3 border rounded-lg px-4 py-3 cursor-pointer hover:bg-gray-50">
+                <input type="radio" name="payment" value="cash_on_delivery" checked={form.payment_method === "cash_on_delivery"}
+                  onChange={() => setForm({ ...form, payment_method: "cash_on_delivery" })} />
+                <div>
+                  <p className="font-medium text-sm">Cash on Delivery</p>
+                  <p className="text-xs text-gray-400">Pay when your order arrives</p>
+                </div>
+              </label>
+              <label className="flex items-center gap-3 border rounded-lg px-4 py-3 opacity-50 cursor-not-allowed">
+                <input type="radio" disabled />
+                <div>
+                  <p className="font-medium text-sm">Mobile Money <span className="text-xs text-blue-500 ml-1">Coming Soon</span></p>
+                  <p className="text-xs text-gray-400">MTN / Airtel Money</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <button type="submit" disabled={loading}
             className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition disabled:opacity-60">
             {loading ? "Placing Order..." : "Place Order"}
