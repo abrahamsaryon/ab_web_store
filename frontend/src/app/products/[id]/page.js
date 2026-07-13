@@ -142,7 +142,7 @@ export default function ProductDetailPage() {
       {/* Product Info */}
       <div className="bg-white rounded-2xl shadow p-4 sm:p-6 md:p-10 grid md:grid-cols-2 gap-6 md:gap-10 mb-8">
         <div className="flex flex-col gap-3">
-          <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden bg-gray-100">
+          <div className="aspect-[4/3] w-full rounded-xl overflow-hidden bg-gray-100">
             <img
               src={activeImage || product.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"}
               alt={product.name} className="w-full h-full object-cover" />
