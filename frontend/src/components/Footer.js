@@ -1,10 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useSettings } from "@/context/SettingsContext";
+import { useAuth } from "@/context/AuthContext";
 import { Store, Mail, Phone, MapPin, Facebook, Twitter, Instagram } from "lucide-react";
 
 export default function Footer() {
   const { settings } = useSettings();
+  const { user } = useAuth();
 
   return (
     <footer className="bg-gray-900 text-gray-300 mt-16">
@@ -42,9 +44,7 @@ export default function Footer() {
         <div>
           <h3 className="text-white font-semibold mb-4">Customer Service</h3>
           <ul className="space-y-2 text-sm">
-            <li><Link href="/auth" className="hover:text-white transition">Login / Register</Link></li>
-            <li><Link href="/dashboard" className="hover:text-white transition">My Account</Link></li>
-            <li><Link href="/profile" className="hover:text-white transition">My Profile</Link></li>
+            {!user && <li><Link href="/auth" className="hover:text-white transition">Login / Register</Link></li>}
           </ul>
         </div>
 
@@ -66,7 +66,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-gray-800 py-4 text-center text-sm text-gray-500">
-        {settings.footer_text}
+        © {new Date().getFullYear()} {settings.site_name}. All rights reserved.
       </div>
     </footer>
   );
