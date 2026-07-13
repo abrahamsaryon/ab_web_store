@@ -17,18 +17,18 @@ export default function Navbar() {
 
   return (
     <nav className="bg-blue-600 text-white shadow-lg sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 text-xl font-bold">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+        <Link href="/" className="flex items-center gap-2 font-bold text-lg shrink-0">
           {settings.site_logo ? (
             <img src={settings.site_logo} alt="logo" className="h-8 w-8 object-contain rounded" />
           ) : (
-            <Store size={24} />
+            <Store size={22} />
           )}
-          {settings.site_name}
+          <span className="hidden xs:inline sm:inline">{settings.site_name}</span>
         </Link>
 
-        <div className="flex items-center gap-6">
-          <Link href="/products" className="hover:text-blue-200 transition">Products</Link>
+        <div className="flex items-center gap-3 sm:gap-5">
+          <Link href="/products" className="hover:text-blue-200 transition text-sm sm:text-base">Products</Link>
 
           <Link href="/cart" className="relative hover:text-blue-200 transition">
             <ShoppingCart size={22} />
@@ -40,25 +40,22 @@ export default function Navbar() {
           </Link>
 
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {user.role === "admin" ? (
-                <Link href="/admin" className="flex items-center gap-1 hover:text-blue-200 transition">
-                  <LayoutDashboard size={18} /> Admin
+                <Link href="/admin" className="flex items-center gap-1 hover:text-blue-200 transition text-sm">
+                  <LayoutDashboard size={17} /> <span className="hidden sm:inline">Admin</span>
                 </Link>
               ) : (
-                <Link href="/dashboard" className="flex items-center gap-1 hover:text-blue-200 transition">
-                  <User size={18} /> {user.name.split(" ")[0]}
+                <Link href="/dashboard" className="flex items-center gap-1 hover:text-blue-200 transition text-sm">
+                  <User size={17} /> <span className="hidden sm:inline">{user.name.split(" ")[0]}</span>
                 </Link>
               )}
-              <Link href="/profile" className="hover:text-blue-200 transition text-sm" title="My Profile">
-                <User size={16} />
-              </Link>
               <button onClick={handleLogout} className="hover:text-blue-200 transition">
                 <LogOut size={18} />
               </button>
             </div>
           ) : (
-            <Link href="/auth" className="bg-white text-blue-600 px-4 py-1.5 rounded-full font-medium hover:bg-blue-50 transition">
+            <Link href="/auth" className="bg-white text-blue-600 px-3 py-1.5 rounded-full font-medium text-sm hover:bg-blue-50 transition whitespace-nowrap">
               Login
             </Link>
           )}

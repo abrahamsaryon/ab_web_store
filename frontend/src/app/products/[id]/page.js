@@ -93,8 +93,8 @@ export default function ProductDetailPage() {
       </button>
 
       {/* Product Info */}
-      <div className="bg-white rounded-2xl shadow p-6 md:p-10 grid md:grid-cols-2 gap-10 mb-10">
-        <div className="relative h-80 rounded-xl overflow-hidden bg-gray-100">
+      <div className="bg-white rounded-2xl shadow p-4 sm:p-6 md:p-10 grid md:grid-cols-2 gap-6 md:gap-10 mb-8">
+        <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden bg-gray-100">
           <Image
             src={product.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"}
             alt={product.name} fill className="object-cover" />
@@ -126,7 +126,7 @@ export default function ProductDetailPage() {
       </div>
 
       {/* Reviews Section */}
-      <div className="grid md:grid-cols-3 gap-8 mb-10">
+      <div className="grid md:grid-cols-3 gap-6 mb-8">
         {/* Write Review */}
         <div className="bg-white rounded-2xl shadow p-6">
           <h2 className="text-lg font-bold mb-4">Write a Review</h2>
@@ -186,7 +186,7 @@ export default function ProductDetailPage() {
           {reviews.length === 0 ? (
             <p className="text-gray-400 text-center py-8">No reviews yet. Be the first!</p>
           ) : (
-            <div className="space-y-4 max-h-96 overflow-y-auto">
+            <div className="space-y-4">
               {reviews.map((r) => (
                 <div key={r.id} className="border-b pb-4 last:border-0">
                   <div className="flex items-start justify-between">
