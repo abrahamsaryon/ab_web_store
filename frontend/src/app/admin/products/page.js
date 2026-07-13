@@ -24,7 +24,7 @@ export default function AdminProducts() {
   const [images, setImages] = useState([]);
   const [imgTab, setImgTab] = useState("url");
   const [imgUrl, setImgUrl] = useState("");
-  const [imgFile, setImgFile] = useState(null);
+  const [imgFiles, setImgFiles] = useState([]);
   const [imgUploading, setImgUploading] = useState(false);
   const fileRef = useRef();
 
@@ -55,7 +55,7 @@ export default function AdminProducts() {
     } : empty);
     setVariantForm(emptyVariant);
     setEditVariantId(null);
-    setImgUrl(""); setImgFile(null);
+    setImgUrl(""); setImgFiles([]);
 
     if (p) {
       const [imgs, vars] = await Promise.all([
@@ -97,26 +97,29 @@ export default function AdminProducts() {
   // --- Images ---
   const handleAddImage = async () => {
     if (!editId) return toast.error("Save the product first");
-    if (!imgUrl && !imgFile) return toast.error("Provide a URL or select a file");
+    if (!imgUrl && imgFiles.length === 0) return toast.error("Provide a URL or select a file");
     setImgUploading(true);
     try {
-      let url, public_id;
-      if (imgFile) {
-        const fd = new FormData();
-        fd.append("image", imgFile);
-        fd.append("folder", "ab_webstore/products");
-        const r = await api.post("/upload", fd, { headers: { "Content-Type": "multipart/form-data" } });
-        url = r.data.url; public_id = r.data.public_id;
+      if (imgFiles.length > 0) {
+        let currentCount = images.length;
+        for (const file of imgFiles) {
+          const fd = new FormData();
+          fd.append("image", file);
+          fd.append("folder", "ab_webstore/products");
+          const r = await api.post("/upload", fd, { headers: { "Content-Type": "multipart/form-data" } });
+          await api.post(`/products/${editId}/images`, { url: r.data.url, public_id: r.data.public_id, is_primary: currentCount === 0 ? 1 : 0 });
+          currentCount++;
+        }
+        toast.success(imgFiles.length > 1 ? `${imgFiles.length} images added` : "Image added");
       } else {
         const r = await api.post("/upload", { url: imgUrl, folder: "ab_webstore/products" });
-        url = r.data.url; public_id = r.data.public_id;
+        await api.post(`/products/${editId}/images`, { url: r.data.url, public_id: r.data.public_id, is_primary: images.length === 0 ? 1 : 0 });
+        toast.success("Image added");
       }
-      await api.post(`/products/${editId}/images`, { url, public_id, is_primary: images.length === 0 ? 1 : 0 });
-      setImgUrl(""); setImgFile(null);
+      setImgUrl(""); setImgFiles([]);
       const imgs = await api.get(`/products/${editId}/images`);
       setImages(imgs.data);
       await load();
-      toast.success("Image added");
     } catch (err) { toast.error(err.response?.data?.message || "Upload failed"); }
     finally { setImgUploading(false); }
   };
@@ -251,9 +254,9 @@ export default function AdminProducts() {
                     <input value={imgUrl} onChange={(e) => setImgUrl(e.target.value)} placeholder="https://..." className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2" />
                   ) : (
                     <div className="mb-2">
-                      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => setImgFile(e.target.files[0])} />
+                      <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => setImgFiles(Array.from(e.target.files))} />
                       <button type="button" onClick={() => fileRef.current.click()} className="border rounded-lg px-3 py-2 text-sm hover:bg-gray-50 w-full text-left text-gray-500">
-                        {imgFile ? imgFile.name : "Choose image file..."}
+                        {imgFiles.length > 0 ? `${imgFiles.length} file${imgFiles.length > 1 ? "s" : ""} selected` : "Choose image file(s)..."}
                       </button>
                     </div>
                   )}
@@ -343,7 +346,7 @@ export default function AdminProducts() {
               <tr key={p.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3">
                   <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
-                    <img src={p.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100"} alt={p.name} className="w-full h-full object-cover" />
+                    <img src={p.image_url || ""} alt={p.name} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = "none"; }} />
                   </div>
                 </td>
                 <td className="px-4 py-3 font-medium">{p.name}</td>
