@@ -1,9 +1,20 @@
 const router = require("express").Router();
-const { getReviews, createReview, deleteReview } = require("../controllers/reviewController");
+const {
+  getReviews, getAllReviews, createReview,
+  updateReviewStatus, deleteReview, canReview
+} = require("../controllers/reviewController");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 
-router.get("/:productId", getReviews);
-router.post("/:productId", authMiddleware, createReview);
+// Public
+router.get("/product/:productId", getReviews);
+
+// Authenticated
+router.get("/can-review/:productId", authMiddleware, canReview);
+router.post("/product/:productId", authMiddleware, createReview);
 router.delete("/:id", authMiddleware, deleteReview);
+
+// Admin only
+router.get("/", authMiddleware, adminMiddleware, getAllReviews);
+router.put("/:id/status", authMiddleware, adminMiddleware, updateReviewStatus);
 
 module.exports = router;

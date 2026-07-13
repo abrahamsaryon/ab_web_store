@@ -23,7 +23,7 @@ export default function ProductDetailPage() {
   const [avgRating, setAvgRating] = useState(null);
   const [related, setRelated] = useState([]);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
-  const [submitting, setSubmitting] = useState(false);
+  const [canReviewData, setCanReview] = useState(null);
 
   useEffect(() => {
     loadProduct();
@@ -33,7 +33,7 @@ export default function ProductDetailPage() {
     try {
       const [p, r] = await Promise.all([
         api.get(`/products/${id}`),
-        api.get(`/reviews/${id}`),
+        api.get(`/reviews/product/${id}`),
       ]);
       setProduct(p.data);
       setReviews(r.data.reviews || []);
@@ -41,6 +41,10 @@ export default function ProductDetailPage() {
       // Load related products by same category
       const rel = await api.get(`/products?category=${p.data.category_id}&limit=4`);
       setRelated((rel.data.products || []).filter((rp) => rp.id !== Number(id)));
+      // Check if user can review
+      if (user) {
+        api.get(`/reviews/can-review/${id}`).then((cr) => setCanReview(cr.data)).catch(() => {});
+      }
     } catch {
       router.push("/products");
     } finally {
@@ -58,10 +62,10 @@ export default function ProductDetailPage() {
     if (!user) return toast.error("Please login to leave a review");
     setSubmitting(true);
     try {
-      await api.post(`/reviews/${id}`, reviewForm);
+      await api.post(`/reviews/product/${id}`, reviewForm);
       toast.success("Review submitted!");
       setReviewForm({ rating: 5, comment: "" });
-      const r = await api.get(`/reviews/${id}`);
+      const r = await api.get(`/reviews/product/${id}`);
       setReviews(r.data.reviews || []);
       setAvgRating(r.data.avg_rating);
     } catch (err) {
@@ -73,7 +77,7 @@ export default function ProductDetailPage() {
 
   const handleDeleteReview = async (reviewId) => {
     await api.delete(`/reviews/${reviewId}`);
-    const r = await api.get(`/reviews/${id}`);
+    const r = await api.get(`/reviews/product/${id}`);
     setReviews(r.data.reviews || []);
     setAvgRating(r.data.avg_rating);
     toast.success("Review deleted");
@@ -127,6 +131,19 @@ export default function ProductDetailPage() {
         <div className="bg-white rounded-2xl shadow p-6">
           <h2 className="text-lg font-bold mb-4">Write a Review</h2>
           {user ? (
+            canReviewData === null ? (
+              <p className="text-gray-400 text-sm text-center py-4">Checking eligibility...</p>
+            ) : !canReviewData.can_review ? (
+              <div className="text-center py-6">
+                <p className="text-gray-500 text-sm mb-1">Only verified buyers can review.</p>
+                <p className="text-xs text-gray-400">Purchase this product and receive your order to leave a review.</p>
+              </div>
+            ) : canReviewData.already_reviewed && canReviewData.review_status === 'pending' ? (
+              <div className="text-center py-6">
+                <p className="text-yellow-600 text-sm font-medium">✓ Review submitted</p>
+                <p className="text-xs text-gray-400 mt-1">Your review is pending admin approval.</p>
+              </div>
+            ) : (
             <form onSubmit={handleReviewSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
@@ -143,6 +160,7 @@ export default function ProductDetailPage() {
                 {submitting ? "Submitting..." : "Submit Review"}
               </button>
             </form>
+            )
           ) : (
             <div className="text-center py-6">
               <p className="text-gray-500 mb-3">Login to leave a review</p>
