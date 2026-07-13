@@ -1,28 +1,30 @@
+"use client";
 export const dynamic = "force-dynamic";
-
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import ProductCard from "@/components/ProductCard";
+import { useSettings } from "@/context/SettingsContext";
 
-async function getFeaturedProducts() {
-  try {
-    const res = await api.get("/products?limit=8");
-    return res.data.products;
-  } catch {
-    return [];
-  }
-}
+export default function HomePage() {
+  const { settings } = useSettings();
+  const [products, setProducts] = useState([]);
 
-export default async function HomePage() {
-  const products = await getFeaturedProducts();
+  useEffect(() => {
+    api.get("/products?limit=8").then((r) => setProducts(r.data.products || [])).catch(() => {});
+  }, []);
 
   return (
     <div>
       {/* Hero */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Welcome to AB WebStore</h1>
-          <p className="text-xl text-blue-100 mb-8">Discover amazing products at unbeatable prices</p>
+      <section
+        className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20 px-4"
+        style={settings.hero_banner ? { backgroundImage: `url(${settings.hero_banner})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
+      >
+        {settings.hero_banner && <div className="absolute inset-0 bg-blue-900/60" />}
+        <div className="relative max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">{settings.hero_title}</h1>
+          <p className="text-xl text-blue-100 mb-8">{settings.hero_subtitle}</p>
           <Link href="/products" className="bg-white text-blue-600 px-8 py-3 rounded-full font-semibold text-lg hover:bg-blue-50 transition">
             Shop Now
           </Link>
@@ -34,11 +36,8 @@ export default async function HomePage() {
         <h2 className="text-2xl font-bold mb-6">Shop by Category</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {["Electronics", "Clothing", "Books", "Home & Garden"].map((cat) => (
-            <Link
-              key={cat}
-              href={`/products?search=${cat}`}
-              className="bg-white rounded-xl p-6 text-center shadow hover:shadow-md hover:text-blue-600 transition font-medium"
-            >
+            <Link key={cat} href={`/products?search=${cat}`}
+              className="bg-white rounded-xl p-6 text-center shadow hover:shadow-md hover:text-blue-600 transition font-medium">
               {cat}
             </Link>
           ))}

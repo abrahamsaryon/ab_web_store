@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Package, ShoppingBag, Users,
-  BarChart2, Settings, LogOut, Store,
+  Settings, LogOut, Store, Globe,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,8 @@ const links = [
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/customers", label: "Customers", icon: Users },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+  { href: "/admin/site", label: "Site Settings", icon: Globe },
+  { href: "/admin/settings", label: "Account Settings", icon: Settings },
 ];
 
 export default function AdminSidebar() {
@@ -46,9 +47,6 @@ export default function AdminSidebar() {
       </nav>
 
       <div className="p-4 border-t border-gray-700 space-y-1">
-        <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 transition">
-          <Settings size={18} /> My Profile
-        </Link>
         <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 transition">
           <Store size={18} /> View Store
         </Link>

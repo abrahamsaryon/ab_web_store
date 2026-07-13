@@ -4,7 +4,7 @@ const pool = require("../config/db");
 const getProfile = async (req, res) => {
   try {
     const [[user]] = await pool.query(
-      "SELECT id, name, email, role, created_at FROM users WHERE id = ?",
+      "SELECT id, name, email, role, avatar, created_at FROM users WHERE id = ?",
       [req.user.id]
     );
     res.json(user);
@@ -14,9 +14,9 @@ const getProfile = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
-  const { name, email } = req.body;
+  const { name, email, avatar } = req.body;
   try {
-    await pool.query("UPDATE users SET name=?, email=? WHERE id=?", [name, email, req.user.id]);
+    await pool.query("UPDATE users SET name=?, email=?, avatar=? WHERE id=?", [name, email, avatar || null, req.user.id]);
     res.json({ message: "Profile updated" });
   } catch (err) {
     res.status(500).json({ message: err.message });

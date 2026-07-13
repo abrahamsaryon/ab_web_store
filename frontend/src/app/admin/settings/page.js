@@ -10,7 +10,7 @@ export default function AdminSettings() {
   const { user, login } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState("profile");
-  const [profile, setProfile] = useState({ name: "", email: "" });
+  const [profile, setProfile] = useState({ name: "", email: "", avatar: "" });
   const [passwords, setPasswords] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [showPw, setShowPw] = useState({ current: false, new: false, confirm: false });
   const [admins, setAdmins] = useState([]);
@@ -22,7 +22,7 @@ export default function AdminSettings() {
   useEffect(() => {
     if (!user) { router.push("/auth"); return; }
     if (user.role !== "admin") { router.push("/"); return; }
-    api.get("/profile").then((r) => setProfile({ name: r.data.name, email: r.data.email }));
+    api.get("/profile").then((r) => setProfile({ name: r.data.name, email: r.data.email, avatar: r.data.avatar || "" }));
     loadAdmins();
   }, [user]);
 
@@ -116,8 +116,8 @@ export default function AdminSettings() {
       {tab === "profile" && (
         <form onSubmit={handleProfileSave} className="bg-white rounded-xl shadow p-6 space-y-4">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-              <User size={28} className="text-blue-600" />
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+              {profile.avatar ? <img src={profile.avatar} alt="avatar" className="w-full h-full object-cover" /> : <User size={28} className="text-blue-600" />}
             </div>
             <div>
               <p className="font-bold text-lg">{user?.name}</p>
@@ -133,6 +133,13 @@ export default function AdminSettings() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
             <input required type="email" value={profile.email} onChange={(e) => setProfile({ ...profile, email: e.target.value })}
               className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture URL</label>
+            <input value={profile.avatar || ""} onChange={(e) => setProfile({ ...profile, avatar: e.target.value })}
+              placeholder="https://example.com/photo.jpg"
+              className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            {profile.avatar && <img src={profile.avatar} alt="preview" className="mt-2 w-16 h-16 rounded-full object-cover border" />}
           </div>
           <button type="submit" disabled={saving}
             className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition disabled:opacity-60">

@@ -5,9 +5,12 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
+import { useSettings } from "@/context/SettingsContext";
+
 export default function Navbar() {
   const { count } = useCart();
   const { user, logout } = useAuth();
+  const { settings } = useSettings();
   const router = useRouter();
 
   const handleLogout = () => { logout(); router.push("/"); };
@@ -16,7 +19,12 @@ export default function Navbar() {
     <nav className="bg-blue-600 text-white shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 text-xl font-bold">
-          <Store size={24} /> AB WebStore
+          {settings.site_logo ? (
+            <img src={settings.site_logo} alt="logo" className="h-8 w-8 object-contain rounded" />
+          ) : (
+            <Store size={24} />
+          )}
+          {settings.site_name}
         </Link>
 
         <div className="flex items-center gap-6">
