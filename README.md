@@ -25,6 +25,8 @@ A full-stack e-commerce web application built with Next.js, Node.js/Express, and
 - Checkout with order placement
 - Order history and tracking
 - Admin product management
+- Product reviews with verified purchase requirement
+- Admin review moderation (approve/reject)
 
 ## Local Development
 
@@ -60,6 +62,8 @@ npm run dev
 
 ## Database Setup
 Run `backend/src/config/schema.sql` on your MySQL instance to create tables and seed data.
+
+Includes tables: `users`, `categories`, `products`, `orders`, `order_items`, `reviews`
 
 **Default admin credentials:**
 - Email: `admin@abstore.com`
