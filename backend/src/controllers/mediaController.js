@@ -3,13 +3,14 @@ const { cloudinary } = require("../config/cloudinary");
 
 // Upload image file (via multer) or save URL directly
 const uploadImage = async (req, res) => {
+  const folder = req.body.folder || req.query.folder || "ab_webstore/general";
   try {
     let url, public_id;
     if (req.file) {
       url = req.file.path;
       public_id = req.file.filename;
     } else if (req.body.url) {
-      const result = await cloudinary.uploader.upload(req.body.url, { folder: "ab_webstore/products" });
+      const result = await cloudinary.uploader.upload(req.body.url, { folder });
       url = result.secure_url;
       public_id = result.public_id;
     } else {

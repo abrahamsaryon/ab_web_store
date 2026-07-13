@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { User, Lock, Shield, Plus, Trash2, Edit2, X, Check, Eye, EyeOff } from "lucide-react";
+import ImageUploader from "@/components/ui/ImageUploader";
 
 export default function AdminSettings() {
   const { user, login } = useAuth();
@@ -135,11 +136,8 @@ export default function AdminSettings() {
               className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture URL</label>
-            <input value={profile.avatar || ""} onChange={(e) => setProfile({ ...profile, avatar: e.target.value })}
-              placeholder="https://example.com/photo.jpg"
-              className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            {profile.avatar && <img src={profile.avatar} alt="preview" className="mt-2 w-16 h-16 rounded-full object-cover border" />}
+            <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture</label>
+            <ImageUploader value={profile.avatar || ""} onChange={(url) => setProfile({ ...profile, avatar: url })} folder="ab_webstore/avatars" label="Avatar" previewClass="w-16 h-16 rounded-full object-cover border" />
           </div>
           <button type="submit" disabled={saving}
             className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition disabled:opacity-60">

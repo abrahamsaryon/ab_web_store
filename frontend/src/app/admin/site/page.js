@@ -6,6 +6,7 @@ import { useSettings } from "@/context/SettingsContext";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { Check, Globe, Image, Bell, Phone, Share2 } from "lucide-react";
+import ImageUploader from "@/components/ui/ImageUploader";
 
 const tabs = [
   { id: "general", label: "General", icon: Globe },
@@ -77,17 +78,8 @@ export default function AdminSiteSettings() {
             <Field label="Site Name" name="site_name" placeholder="AB WebStore" />
             <Field label="Site Tagline" name="site_tagline" placeholder="Your one-stop online shop" />
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Site Logo URL</label>
-              <p className="text-xs text-gray-400 mb-1">Paste a direct image URL (e.g. from Imgur, Cloudinary)</p>
-              <input value={form.site_logo || ""} onChange={(e) => set("site_logo", e.target.value)}
-                placeholder="https://example.com/logo.png"
-                className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              {form.site_logo && (
-                <div className="mt-2 flex items-center gap-3">
-                  <img src={form.site_logo} alt="logo preview" className="h-12 w-12 object-contain rounded border" />
-                  <span className="text-xs text-gray-500">Logo preview</span>
-                </div>
-              )}
+              <label className="block text-sm font-medium text-gray-700 mb-1">Site Logo</label>
+              <ImageUploader value={form.site_logo || ""} onChange={(url) => set("site_logo", url)} folder="ab_webstore/logos" label="Logo" previewClass="h-12 w-12 object-contain rounded border" />
             </div>
             <Field label="Footer Text" name="footer_text" placeholder="© 2025 AB WebStore. All rights reserved." />
           </>
@@ -99,17 +91,8 @@ export default function AdminSiteSettings() {
             <Field label="Hero Title" name="hero_title" placeholder="Welcome to AB WebStore" />
             <Field label="Hero Subtitle" name="hero_subtitle" placeholder="Discover amazing products at unbeatable prices" />
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Hero Banner Image URL</label>
-              <p className="text-xs text-gray-400 mb-1">Paste a direct image URL for the homepage banner background</p>
-              <input value={form.hero_banner || ""} onChange={(e) => set("hero_banner", e.target.value)}
-                placeholder="https://example.com/banner.jpg"
-                className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              {form.hero_banner && (
-                <div className="mt-2 rounded-xl overflow-hidden h-32 relative">
-                  <img src={form.hero_banner} alt="banner preview" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-blue-900/50 flex items-center justify-center text-white text-sm font-medium">Banner Preview</div>
-                </div>
-              )}
+              <label className="block text-sm font-medium text-gray-700 mb-2">Hero Banner Image</label>
+              <ImageUploader value={form.hero_banner || ""} onChange={(url) => set("hero_banner", url)} folder="ab_webstore/banners" label="Banner" previewClass="w-full h-32 object-cover rounded-xl" />
             </div>
           </>
         )}
