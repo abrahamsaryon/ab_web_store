@@ -1,35 +1,87 @@
 "use client";
 export const dynamic = "force-dynamic";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import ProductCard from "@/components/ProductCard";
 import { useSettings } from "@/context/SettingsContext";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function HomePage() {
   const { settings } = useSettings();
   const [products, setProducts] = useState([]);
+  const [banners, setBanners] = useState([]);
+  const [current, setCurrent] = useState(0);
 
   useEffect(() => {
     api.get("/products?limit=8").then((r) => setProducts(r.data.products || [])).catch(() => {});
+    api.get("/banners?active=1").then((r) => setBanners(r.data || [])).catch(() => {});
   }, []);
+
+  const prev = useCallback(() => setCurrent((c) => (c - 1 + banners.length) % banners.length), [banners.length]);
+  const next = useCallback(() => setCurrent((c) => (c + 1) % banners.length), [banners.length]);
+
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const t = setInterval(next, 5000);
+    return () => clearInterval(t);
+  }, [banners.length, next]);
+
+  const activeBanner = banners[current];
 
   return (
     <div>
-      {/* Hero */}
-      <section
-        className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white py-14 sm:py-20 px-4"
-        style={settings.hero_banner ? { backgroundImage: `url(${settings.hero_banner})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
-      >
-        {settings.hero_banner && <div className="absolute inset-0 bg-blue-900/60" />}
-        <div className="relative max-w-4xl mx-auto text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">{settings.hero_title}</h1>
-          <p className="text-base sm:text-xl text-blue-100 mb-8">{settings.hero_subtitle}</p>
-          <Link href="/products" className="bg-white text-blue-600 px-6 sm:px-8 py-3 rounded-full font-semibold text-base sm:text-lg hover:bg-blue-50 transition">
-            Shop Now
-          </Link>
-        </div>
-      </section>
+      {/* Hero / Banner Carousel */}
+      {banners.length > 0 ? (
+        <section className="relative overflow-hidden">
+          <div
+            className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white py-14 sm:py-20 px-4 transition-all duration-500"
+            style={activeBanner.image_url ? { backgroundImage: `url(${activeBanner.image_url})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
+          >
+            {activeBanner.image_url && <div className="absolute inset-0 bg-blue-900/60" />}
+            <div className="relative max-w-4xl mx-auto text-center">
+              {activeBanner.title && <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">{activeBanner.title}</h1>}
+              {activeBanner.subtitle && <p className="text-base sm:text-xl text-blue-100 mb-8">{activeBanner.subtitle}</p>}
+              {activeBanner.button_text && (
+                <Link href={activeBanner.button_link || "/products"}
+                  className="bg-white text-blue-600 px-6 sm:px-8 py-3 rounded-full font-semibold text-base sm:text-lg hover:bg-blue-50 transition">
+                  {activeBanner.button_text}
+                </Link>
+              )}
+            </div>
+          </div>
+          {banners.length > 1 && (
+            <>
+              <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full p-2 transition">
+                <ChevronLeft size={20} />
+              </button>
+              <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full p-2 transition">
+                <ChevronRight size={20} />
+              </button>
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {banners.map((_, i) => (
+                  <button key={i} onClick={() => setCurrent(i)}
+                    className={`w-2 h-2 rounded-full transition ${i === current ? "bg-white" : "bg-white/40"}`} />
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+      ) : (
+        <section
+          className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white py-14 sm:py-20 px-4"
+          style={settings.hero_banner ? { backgroundImage: `url(${settings.hero_banner})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
+        >
+          {settings.hero_banner && <div className="absolute inset-0 bg-blue-900/60" />}
+          <div className="relative max-w-4xl mx-auto text-center">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">{settings.hero_title}</h1>
+            <p className="text-base sm:text-xl text-blue-100 mb-8">{settings.hero_subtitle}</p>
+            <Link href="/products" className="bg-white text-blue-600 px-6 sm:px-8 py-3 rounded-full font-semibold text-base sm:text-lg hover:bg-blue-50 transition">
+              Shop Now
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Categories */}
       <section className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
