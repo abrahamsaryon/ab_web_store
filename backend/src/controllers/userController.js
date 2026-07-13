@@ -4,7 +4,7 @@ const pool = require("../config/db");
 const getUsers = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      "SELECT id, name, email, role, status, created_at FROM users ORDER BY created_at DESC"
+      "SELECT id, name, email, role, status, avatar, created_at FROM users ORDER BY created_at DESC"
     );
     res.json(rows);
   } catch (err) {
@@ -15,7 +15,7 @@ const getUsers = async (req, res) => {
 const getUser = async (req, res) => {
   try {
     const [[user]] = await pool.query(
-      "SELECT id, name, email, role, status, created_at FROM users WHERE id = ?",
+      "SELECT id, name, email, role, status, avatar, created_at FROM users WHERE id = ?",
       [req.params.id]
     );
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -48,18 +48,18 @@ const createUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  const { name, email, role, password } = req.body;
+  const { name, email, role, password, avatar } = req.body;
   try {
     if (password) {
       const hashed = await bcrypt.hash(password, 10);
       await pool.query(
-        "UPDATE users SET name=?, email=?, role=?, password=? WHERE id=?",
-        [name, email, role, hashed, req.params.id]
+        "UPDATE users SET name=?, email=?, role=?, password=?, avatar=? WHERE id=?",
+        [name, email, role, hashed, avatar || null, req.params.id]
       );
     } else {
       await pool.query(
-        "UPDATE users SET name=?, email=?, role=? WHERE id=?",
-        [name, email, role, req.params.id]
+        "UPDATE users SET name=?, email=?, role=?, avatar=? WHERE id=?",
+        [name, email, role, avatar || null, req.params.id]
       );
     }
     res.json({ message: "User updated" });
