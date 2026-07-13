@@ -113,6 +113,18 @@ const deleteReview = async (req, res) => {
   }
 };
 
+const getUserReviews = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT r.*, p.name as product_name FROM reviews r JOIN products p ON r.product_id = p.id WHERE r.user_id = ? ORDER BY r.created_at DESC`,
+      [req.user.id]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // Check if current user can review this product
 const canReview = async (req, res) => {
   try {

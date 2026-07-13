@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const {
   getReviews, getAllReviews, createReview,
-  updateReviewStatus, deleteReview, canReview
+  updateReviewStatus, deleteReview, canReview, getUserReviews
 } = require("../controllers/reviewController");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 
@@ -9,6 +9,7 @@ const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 router.get("/product/:productId", getReviews);
 
 // Authenticated
+router.get("/user", authMiddleware, getUserReviews);
 router.get("/can-review/:productId", authMiddleware, canReview);
 router.post("/product/:productId", authMiddleware, createReview);
 router.delete("/:id", authMiddleware, deleteReview);
