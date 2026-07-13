@@ -1,12 +1,13 @@
 "use client";
 export const dynamic = "force-dynamic";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import ProductCard from "@/components/ProductCard";
 import { Search } from "lucide-react";
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -17,7 +18,7 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    api.get("/categories").then((r) => setCategories(r.data));
+    api.get("/categories").then((r) => setCategories(r.data)).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function ProductsPage() {
     if (category) params.set("category", category);
     api.get(`/products?${params}`)
       .then((r) => { setProducts(r.data.products); setPages(r.data.pages); })
+      .catch(() => setProducts([]))
       .finally(() => setLoading(false));
   }, [search, category, page]);
 
@@ -34,7 +36,6 @@ export default function ProductsPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">All Products</h1>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-8">
         <div className="relative flex-1">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -68,7 +69,6 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Pagination */}
       {pages > 1 && (
         <div className="flex justify-center gap-2 mt-10">
           {[...Array(pages)].map((_, i) => (
@@ -83,5 +83,13 @@ export default function ProductsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>}>
+      <ProductsContent />
+    </Suspense>
   );
 }
