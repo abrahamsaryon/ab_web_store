@@ -42,6 +42,9 @@ export default function Navbar() {
                   <User size={18} /> {user.name.split(" ")[0]}
                 </Link>
               )}
+              <Link href="/profile" className="hover:text-blue-200 transition text-sm" title="My Profile">
+                <User size={16} />
+              </Link>
               <button onClick={handleLogout} className="hover:text-blue-200 transition">
                 <LogOut size={18} />
               </button>
