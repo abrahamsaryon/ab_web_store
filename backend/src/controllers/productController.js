@@ -3,7 +3,7 @@ const pool = require("../config/db");
 const getProducts = async (req, res) => {
   const { category, search, page = 1, limit = 12 } = req.query;
   const offset = (page - 1) * limit;
-  let query = `SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE 1=1`;
+  let query = `SELECT p.*, COALESCE((SELECT url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1), p.image_url) as image_url, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE 1=1`;
   const params = [];
 
   if (category) { query += " AND p.category_id = ?"; params.push(category); }
@@ -28,7 +28,7 @@ const getProducts = async (req, res) => {
 const getProduct = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      "SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = ?",
+      `SELECT p.*, COALESCE((SELECT url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1), p.image_url) as image_url, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = ?`,
       [req.params.id]
     );
     if (!rows.length) return res.status(404).json({ message: "Product not found" });
