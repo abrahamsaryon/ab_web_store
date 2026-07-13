@@ -26,6 +26,10 @@ export default function ProductDetailPage() {
   const [related, setRelated] = useState([]);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [canReviewData, setCanReview] = useState(null);
+  const [productImages, setProductImages] = useState([]);
+  const [activeImage, setActiveImage] = useState(null);
+  const [variants, setVariants] = useState([]);
+  const [selectedVariants, setSelectedVariants] = useState({});
 
   const [waLoading, setWaLoading] = useState(false);
 
@@ -42,6 +46,14 @@ export default function ProductDetailPage() {
       setProduct(p.data);
       setReviews(r.data.reviews || []);
       setAvgRating(r.data.avg_rating);
+      setActiveImage(p.data.image_url);
+      // Load images and variants
+      const [imgs, vars] = await Promise.all([
+        api.get(`/products/${id}/images`),
+        api.get(`/products/${id}/variants`),
+      ]);
+      setProductImages(imgs.data);
+      setVariants(vars.data);
       // Load related products by same category
       const rel = await api.get(`/products?category=${p.data.category_id}&limit=4`);
       setRelated((rel.data.products || []).filter((rp) => rp.id !== Number(id)));
@@ -73,6 +85,20 @@ export default function ProductDetailPage() {
       setWaLoading(false);
     }
   };
+
+  // Compute variant-adjusted price
+  const variantPriceModifier = Object.values(selectedVariants).reduce((sum, v) => sum + Number(v.price_modifier), 0);
+  const displayPrice = product ? Number(product.price) + variantPriceModifier : 0;
+  const selectedVariantStock = Object.values(selectedVariants).length > 0
+    ? Math.min(...Object.values(selectedVariants).map((v) => v.stock))
+    : null;
+
+  // Group variants by name
+  const variantGroups = variants.reduce((acc, v) => {
+    if (!acc[v.name]) acc[v.name] = [];
+    acc[v.name].push(v);
+    return acc;
+  }, {});
 
   const handleAdd = () => {
     addToCart(product, quantity);
@@ -116,10 +142,22 @@ export default function ProductDetailPage() {
 
       {/* Product Info */}
       <div className="bg-white rounded-2xl shadow p-4 sm:p-6 md:p-10 grid md:grid-cols-2 gap-6 md:gap-10 mb-8">
-        <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden bg-gray-100">
-          <Image
-            src={product.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"}
-            alt={product.name} fill className="object-cover" />
+        <div className="flex flex-col gap-3">
+          <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden bg-gray-100">
+            <Image
+              src={activeImage || product.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"}
+              alt={product.name} fill className="object-cover" />
+          </div>
+          {productImages.length > 1 && (
+            <div className="flex gap-2 flex-wrap">
+              {productImages.map((img) => (
+                <button key={img.id} onClick={() => setActiveImage(img.url)}
+                  className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition ${activeImage === img.url ? "border-blue-600" : "border-transparent hover:border-gray-300"}`}>
+                  <img src={img.url} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex flex-col">
           <span className="text-sm text-blue-600 font-medium mb-2">{product.category_name}</span>
@@ -131,16 +169,40 @@ export default function ProductDetailPage() {
             </div>
           )}
           <p className="text-gray-600 mb-6">{product.description}</p>
-          <p className="text-3xl font-bold text-blue-600 mb-2">{Number(product.price).toLocaleString()} RWF</p>
-          <p className="text-sm mb-6">
-            {product.stock > 0 ? <span className="text-green-600">{product.stock} in stock</span> : <span className="text-red-500">Out of stock</span>}
+          <p className="text-3xl font-bold text-blue-600 mb-2">{displayPrice.toLocaleString()} RWF{variantPriceModifier !== 0 && <span className="text-sm font-normal text-gray-400 ml-2">(base {Number(product.price).toLocaleString()})</span>}</p>
+          <p className="text-sm mb-4">
+            {(selectedVariantStock ?? product.stock) > 0
+              ? <span className="text-green-600">{selectedVariantStock ?? product.stock} in stock</span>
+              : <span className="text-red-500">Out of stock</span>}
           </p>
-          <div className="flex items-center gap-3 mb-6">
+          {/* Variant selectors */}
+          {Object.entries(variantGroups).map(([groupName, options]) => (
+            <div key={groupName} className="mb-4">
+              <p className="text-sm font-medium text-gray-700 mb-2">{groupName}</p>
+              <div className="flex gap-2 flex-wrap">
+                {options.map((v) => (
+                  <button key={v.id} type="button"
+                    onClick={() => {
+                      setSelectedVariants((prev) => ({ ...prev, [groupName]: v }));
+                      if (v.image_url) setActiveImage(v.image_url);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg border text-sm transition ${
+                      selectedVariants[groupName]?.id === v.id
+                        ? "border-blue-600 bg-blue-50 text-blue-700 font-medium"
+                        : "border-gray-200 hover:border-gray-400"
+                    }`}>
+                    {v.value}{v.price_modifier != 0 && <span className="text-xs ml-1 text-gray-400">{Number(v.price_modifier) > 0 ? "+" : ""}{Number(v.price_modifier).toLocaleString()}</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+          <div className="flex items-center gap-3 mb-4">
             <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-9 h-9 border rounded-lg flex items-center justify-center hover:bg-gray-50">−</button>
             <span className="w-10 text-center font-semibold">{quantity}</span>
-            <button onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} className="w-9 h-9 border rounded-lg flex items-center justify-center hover:bg-gray-50">+</button>
+            <button onClick={() => setQuantity(Math.min(selectedVariantStock ?? product.stock, quantity + 1))} className="w-9 h-9 border rounded-lg flex items-center justify-center hover:bg-gray-50">+</button>
           </div>
-          <button onClick={handleAdd} disabled={product.stock === 0}
+          <button onClick={handleAdd} disabled={(selectedVariantStock ?? product.stock) === 0}
             className="flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition disabled:opacity-50">
             <ShoppingCart size={20} /> Add to Cart
           </button>

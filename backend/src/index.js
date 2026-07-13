@@ -15,6 +15,7 @@ app.use("/api/users", require("./routes/users"));
 app.use("/api/profile", require("./routes/profile"));
 app.use("/api/settings", require("./routes/settings"));
 app.use("/api/reviews", require("./routes/reviews"));
+app.use("/api/products", require("./routes/media"));
 
 app.get("/", (req, res) => res.json({ message: "AB WebStore API running" }));
 

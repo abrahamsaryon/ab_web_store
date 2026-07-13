@@ -49,6 +49,27 @@ CREATE TABLE IF NOT EXISTS order_items (
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS product_images (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  url VARCHAR(500) NOT NULL,
+  public_id VARCHAR(200) DEFAULT NULL,
+  is_primary TINYINT(1) DEFAULT 0,
+  sort_order INT DEFAULT 0,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS product_variants (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  value VARCHAR(100) NOT NULL,
+  price_modifier DECIMAL(10,2) DEFAULT 0,
+  stock INT DEFAULT 0,
+  image_url VARCHAR(500) DEFAULT NULL,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS reviews (
   id INT AUTO_INCREMENT PRIMARY KEY,
   product_id INT NOT NULL,
