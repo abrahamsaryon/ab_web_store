@@ -52,11 +52,11 @@ const createProduct = async (req, res) => {
 };
 
 const updateProduct = async (req, res) => {
-  const { name, description, price, stock, image_url, category_id, whatsapp_enabled = 0, whatsapp_number = null } = req.body;
+  const { name, description, price, stock, category_id, whatsapp_enabled = 0, whatsapp_number = null } = req.body;
   try {
     await pool.query(
-      "UPDATE products SET name=?, description=?, price=?, stock=?, image_url=?, category_id=?, whatsapp_enabled=?, whatsapp_number=? WHERE id=?",
-      [name, description, price, stock, image_url, category_id, whatsapp_enabled ? 1 : 0, whatsapp_number || null, req.params.id]
+      "UPDATE products SET name=?, description=?, price=?, stock=?, category_id=?, whatsapp_enabled=?, whatsapp_number=? WHERE id=?",
+      [name, description, price, stock, category_id, whatsapp_enabled ? 1 : 0, whatsapp_number || null, req.params.id]
     );
     res.json({ message: "Product updated" });
   } catch (err) {
