@@ -34,15 +34,15 @@ export default function HomePage() {
       {/* Hero / Banner Carousel */}
       {banners.length > 0 ? (
         <section className="relative overflow-hidden">
-          <div className="relative min-h-[280px] sm:min-h-[380px] md:min-h-[460px] bg-gradient-to-r from-blue-600 to-blue-800 text-white flex items-center">
+          <div className="relative min-h-[200px] sm:min-h-[300px] md:min-h-[400px] bg-gradient-to-r from-blue-600 to-blue-800 text-white flex items-center">
             {activeBanner.image_url && (
               <img src={activeBanner.image_url} alt={activeBanner.title || ""}
-                className="absolute inset-0 w-full h-full object-cover" />
+                className="absolute inset-0 w-full h-full object-cover object-center" />
             )}
             {activeBanner.image_url && <div className="absolute inset-0 bg-blue-900/60" />}
-            <div className="relative w-full max-w-4xl mx-auto text-center px-4 py-14 sm:py-20">
-              {activeBanner.title && <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">{activeBanner.title}</h1>}
-              {activeBanner.subtitle && <p className="text-base sm:text-xl text-blue-100 mb-8">{activeBanner.subtitle}</p>}
+            <div className="relative w-full max-w-4xl mx-auto text-center px-4 py-10 sm:py-16">
+              {activeBanner.title && <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3">{activeBanner.title}</h1>}
+              {activeBanner.subtitle && <p className="text-sm sm:text-xl text-blue-100 mb-6">{activeBanner.subtitle}</p>}
               {activeBanner.button_text && (
                 <Link href={activeBanner.button_link || "/products"}
                   className="bg-white text-blue-600 px-6 sm:px-8 py-3 rounded-full font-semibold text-base sm:text-lg hover:bg-blue-50 transition inline-block">
@@ -69,16 +69,14 @@ export default function HomePage() {
           )}
         </section>
       ) : (
-        <section
-          className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white overflow-hidden min-h-[280px] sm:min-h-[380px] md:min-h-[460px] flex items-center"
-        >
+        <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white overflow-hidden min-h-[200px] sm:min-h-[300px] md:min-h-[400px] flex items-center">
           {settings.hero_banner && (
             <img src={settings.hero_banner} alt="" className="absolute inset-0 w-full h-full object-cover" />
           )}
           {settings.hero_banner && <div className="absolute inset-0 bg-blue-900/60" />}
-          <div className="relative w-full max-w-4xl mx-auto text-center px-4 py-14 sm:py-20">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">{settings.hero_title}</h1>
-            <p className="text-base sm:text-xl text-blue-100 mb-8">{settings.hero_subtitle}</p>
+          <div className="relative w-full max-w-4xl mx-auto text-center px-4 py-10 sm:py-16">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3">{settings.hero_title}</h1>
+            <p className="text-sm sm:text-xl text-blue-100 mb-6">{settings.hero_subtitle}</p>
             <Link href="/products" className="bg-white text-blue-600 px-6 sm:px-8 py-3 rounded-full font-semibold text-base sm:text-lg hover:bg-blue-50 transition inline-block">
               Shop Now
             </Link>

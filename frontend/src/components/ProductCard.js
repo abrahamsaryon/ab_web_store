@@ -41,7 +41,7 @@ export default function ProductCard({ product }) {
   return (
     <div className="bg-white rounded-xl shadow hover:shadow-md transition overflow-hidden flex flex-col group">
       <Link href={`/products/${product.id}`}>
-        <div className="relative aspect-[4/3] w-full bg-gray-100 overflow-hidden">
+        <div className="relative aspect-[16/9] sm:aspect-[4/3] w-full bg-gray-100 overflow-hidden">
           <img
             src={product.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"}
             alt={product.name}
