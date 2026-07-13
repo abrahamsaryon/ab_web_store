@@ -36,7 +36,7 @@ export default function HomePage() {
         <h2 className="text-2xl font-bold mb-6">Shop by Category</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {["Electronics", "Clothing", "Books", "Home & Garden"].map((cat) => (
-            <Link key={cat} href={`/products?search=${cat}`}
+            <Link key={cat} href={`/products?category=${encodeURIComponent(cat)}`}
               className="bg-white rounded-xl p-6 text-center shadow hover:shadow-md hover:text-blue-600 transition font-medium">
               {cat}
             </Link>

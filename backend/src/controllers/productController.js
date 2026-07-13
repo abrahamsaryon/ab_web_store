@@ -14,7 +14,11 @@ const getProducts = async (req, res) => {
 
   try {
     const [products] = await pool.query(query, params);
-    const [[{ total }]] = await pool.query("SELECT COUNT(*) as total FROM products");
+    let countQuery = "SELECT COUNT(*) as total FROM products p WHERE 1=1";
+  const countParams = [];
+  if (category) { countQuery += " AND p.category_id = ?"; countParams.push(category); }
+  if (search) { countQuery += " AND (p.name LIKE ? OR p.description LIKE ?)"; countParams.push(`%${search}%`, `%${search}%`); }
+  const [[{ total }]] = await pool.query(countQuery, countParams);
     res.json({ products, total, page: Number(page), pages: Math.ceil(total / limit) });
   } catch (err) {
     res.status(500).json({ message: err.message });

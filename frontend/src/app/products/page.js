@@ -13,12 +13,19 @@ function ProductsContent() {
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [category, setCategory] = useState("");
+  const categoryParam = searchParams.get("category");
   const [loading, setLoading] = useState(true);
   const [pages, setPages] = useState(1);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    api.get("/categories").then((r) => setCategories(r.data)).catch(() => {});
+    api.get("/categories").then((r) => {
+      setCategories(r.data);
+      if (categoryParam) {
+        const match = r.data.find((c) => c.name.toLowerCase() === categoryParam.toLowerCase());
+        if (match) setCategory(String(match.id));
+      }
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {
