@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ShoppingCart, User, LogOut, Store } from "lucide-react";
+import { ShoppingCart, User, LogOut, Store, LayoutDashboard } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -10,10 +10,7 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
-    router.push("/");
-  };
+  const handleLogout = () => { logout(); router.push("/"); };
 
   return (
     <nav className="bg-blue-600 text-white shadow-lg sticky top-0 z-50">
@@ -36,9 +33,15 @@ export default function Navbar() {
 
           {user ? (
             <div className="flex items-center gap-3">
-              <Link href="/orders" className="hover:text-blue-200 transition flex items-center gap-1">
-                <User size={18} /> {user.name.split(" ")[0]}
-              </Link>
+              {user.role === "admin" ? (
+                <Link href="/admin" className="flex items-center gap-1 hover:text-blue-200 transition">
+                  <LayoutDashboard size={18} /> Admin
+                </Link>
+              ) : (
+                <Link href="/dashboard" className="flex items-center gap-1 hover:text-blue-200 transition">
+                  <User size={18} /> {user.name.split(" ")[0]}
+                </Link>
+              )}
               <button onClick={handleLogout} className="hover:text-blue-200 transition">
                 <LogOut size={18} />
               </button>
