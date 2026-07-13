@@ -69,7 +69,8 @@ export default function AdminCustomers() {
   };
 
   const filtered = users.filter((u) =>
-    !search || u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
+    u.role === "customer" &&
+    (!search || u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()))
   );
 
   const roleColors = { admin: "bg-purple-100 text-purple-700", customer: "bg-green-100 text-green-700" };
@@ -77,7 +78,7 @@ export default function AdminCustomers() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Customers & Users</h1>
+        <h1 className="text-2xl font-bold">Customers</h1>
         <button onClick={() => { setShowForm(true); setEditId(null); setForm(empty); }}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
           <Plus size={16} /> Add User
@@ -93,20 +94,19 @@ export default function AdminCustomers() {
 
       {/* Create/Edit Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow p-6 mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow p-6 mb-6 grid grid-cols-1 md:grid-cols-2 gap-4" autoComplete="off">
           <h2 className="md:col-span-2 font-semibold text-lg">{editId ? "Edit User" : "Add New User"}</h2>
           <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="Full Name" className="border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            placeholder="Full Name" autoComplete="off" className="border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-            placeholder="Email Address" className="border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            placeholder="Email Address" autoComplete="off" className="border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
             placeholder={editId ? "New Password (leave blank to keep)" : "Password *"}
-            required={!editId}
+            required={!editId} autoComplete="new-password"
             className="border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}
             className="border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="customer">Customer</option>
-            <option value="admin">Admin</option>
           </select>
           <div className="flex gap-3 md:col-span-2">
             <button type="submit" className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition">
