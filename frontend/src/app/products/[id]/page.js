@@ -5,8 +5,9 @@ import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { useSettings } from "@/context/SettingsContext";
 import toast from "react-hot-toast";
-import { ShoppingCart, ArrowLeft, Star, User, Trash2 } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Star, User, Trash2, MessageCircle } from "lucide-react";
 import StarRating from "@/components/ui/StarRating";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
@@ -16,6 +17,7 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const { settings } = useSettings();
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -24,6 +26,8 @@ export default function ProductDetailPage() {
   const [related, setRelated] = useState([]);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [canReviewData, setCanReview] = useState(null);
+
+  const [waLoading, setWaLoading] = useState(false);
 
   useEffect(() => {
     loadProduct();
@@ -49,6 +53,24 @@ export default function ProductDetailPage() {
       router.push("/products");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleWhatsApp = async () => {
+    if (!user) return toast.error("Please login to buy via WhatsApp");
+    setWaLoading(true);
+    try {
+      const res = await api.post("/orders/whatsapp", {
+        product_id: product.id,
+        quantity,
+        default_number: settings.contact_phone,
+      });
+      window.open(res.data.whatsapp_url, "_blank");
+      toast.success(`Order #${res.data.order_id} recorded! Complete it on WhatsApp.`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed");
+    } finally {
+      setWaLoading(false);
     }
   };
 
@@ -122,6 +144,12 @@ export default function ProductDetailPage() {
             className="flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition disabled:opacity-50">
             <ShoppingCart size={20} /> Add to Cart
           </button>
+          {product.whatsapp_enabled && (
+            <button onClick={handleWhatsApp} disabled={product.stock === 0 || waLoading}
+              className="mt-3 flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition disabled:opacity-50">
+              <MessageCircle size={20} /> {waLoading ? "Processing..." : "Buy via WhatsApp"}
+            </button>
+          )}
         </div>
       </div>
 

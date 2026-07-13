@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS products (
   stock INT DEFAULT 0,
   image_url VARCHAR(500),
   category_id INT,
+  whatsapp_enabled TINYINT(1) DEFAULT 0,
+  whatsapp_number VARCHAR(20) DEFAULT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );

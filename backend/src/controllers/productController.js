@@ -39,11 +39,11 @@ const getProduct = async (req, res) => {
 };
 
 const createProduct = async (req, res) => {
-  const { name, description, price, stock, image_url, category_id } = req.body;
+  const { name, description, price, stock, image_url, category_id, whatsapp_enabled = 0, whatsapp_number = null } = req.body;
   try {
     const [result] = await pool.query(
-      "INSERT INTO products (name, description, price, stock, image_url, category_id) VALUES (?, ?, ?, ?, ?, ?)",
-      [name, description, price, stock, image_url, category_id]
+      "INSERT INTO products (name, description, price, stock, image_url, category_id, whatsapp_enabled, whatsapp_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [name, description, price, stock, image_url, category_id, whatsapp_enabled ? 1 : 0, whatsapp_number || null]
     );
     res.status(201).json({ id: result.insertId, ...req.body });
   } catch (err) {
@@ -52,11 +52,11 @@ const createProduct = async (req, res) => {
 };
 
 const updateProduct = async (req, res) => {
-  const { name, description, price, stock, image_url, category_id } = req.body;
+  const { name, description, price, stock, image_url, category_id, whatsapp_enabled = 0, whatsapp_number = null } = req.body;
   try {
     await pool.query(
-      "UPDATE products SET name=?, description=?, price=?, stock=?, image_url=?, category_id=? WHERE id=?",
-      [name, description, price, stock, image_url, category_id, req.params.id]
+      "UPDATE products SET name=?, description=?, price=?, stock=?, image_url=?, category_id=?, whatsapp_enabled=?, whatsapp_number=? WHERE id=?",
+      [name, description, price, stock, image_url, category_id, whatsapp_enabled ? 1 : 0, whatsapp_number || null, req.params.id]
     );
     res.json({ message: "Product updated" });
   } catch (err) {

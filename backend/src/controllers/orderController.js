@@ -88,4 +88,39 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, getMyOrders, getOrderById, getAllOrders, updateOrderStatus };
+// WhatsApp order: create a pending record then return the WhatsApp URL
+const createWhatsappOrder = async (req, res) => {
+  const { product_id, quantity = 1, shipping_address = 'To be confirmed via WhatsApp', phone = '' } = req.body;
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    const [[product]] = await conn.query("SELECT * FROM products WHERE id = ?", [product_id]);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+    if (product.stock < quantity) return res.status(400).json({ message: "Insufficient stock" });
+
+    const total = product.price * quantity;
+    const [order] = await conn.query(
+      "INSERT INTO orders (user_id, total_amount, shipping_address, phone, payment_method, status) VALUES (?, ?, ?, ?, 'whatsapp', 'pending')",
+      [req.user.id, total, shipping_address, phone]
+    );
+    await conn.query(
+      "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)",
+      [order.insertId, product_id, quantity, product.price]
+    );
+    await conn.query("UPDATE products SET stock = stock - ? WHERE id = ?", [quantity, product_id]);
+    await conn.commit();
+
+    const waNumber = (product.whatsapp_number || req.body.default_number || '').replace(/\D/g, '');
+    const msg = encodeURIComponent(
+      `Hi, I'd like to order:\n*${product.name}* x${quantity}\nPrice: ${Number(total).toLocaleString()} RWF\nOrder ID: #${order.insertId}\nPlease confirm my order.`
+    );
+    res.json({ order_id: order.insertId, whatsapp_url: `https://wa.me/${waNumber}?text=${msg}` });
+  } catch (err) {
+    await conn.rollback();
+    res.status(500).json({ message: err.message });
+  } finally {
+    conn.release();
+  }
+};
+
+module.exports = { createOrder, getMyOrders, getOrderById, getAllOrders, updateOrderStatus, createWhatsappOrder };

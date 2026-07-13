@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { Plus, Trash2, Edit2, X, Check, Search } from "lucide-react";
 import Image from "next/image";
 
-const empty = { name: "", description: "", price: "", stock: "", image_url: "", category_id: "" };
+const empty = { name: "", description: "", price: "", stock: "", image_url: "", category_id: "", whatsapp_enabled: false, whatsapp_number: "" };
 
 export default function AdminProducts() {
   const { user } = useAuth();
@@ -41,7 +41,7 @@ export default function AdminProducts() {
   };
 
   const handleEdit = (p) => {
-    setForm({ name: p.name, description: p.description || "", price: p.price, stock: p.stock, image_url: p.image_url || "", category_id: p.category_id });
+    setForm({ name: p.name, description: p.description || "", price: p.price, stock: p.stock, image_url: p.image_url || "", category_id: p.category_id, whatsapp_enabled: !!p.whatsapp_enabled, whatsapp_number: p.whatsapp_number || "" });
     setEditId(p.id); setShowForm(true);
   };
 
@@ -82,6 +82,18 @@ export default function AdminProducts() {
           <input required type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="Stock Quantity" className="border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           <input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="Image URL (https://...)" className="border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2" />
           <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" rows={3} className="border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2" />
+          <div className="md:col-span-2 border rounded-lg p-4 space-y-3">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" checked={form.whatsapp_enabled} onChange={(e) => setForm({ ...form, whatsapp_enabled: e.target.checked })}
+                className="w-4 h-4 accent-green-500" />
+              <span className="font-medium text-sm">Enable WhatsApp Buy Button</span>
+            </label>
+            {form.whatsapp_enabled && (
+              <input value={form.whatsapp_number} onChange={(e) => setForm({ ...form, whatsapp_number: e.target.value })}
+                placeholder="WhatsApp number (e.g. +250700000000) — leave blank to use platform default"
+                className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm" />
+            )}
+          </div>
           <div className="flex gap-3 md:col-span-2">
             <button type="submit" className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition"><Check size={16} /> {editId ? "Update" : "Add Product"}</button>
             <button type="button" onClick={() => { setShowForm(false); setEditId(null); }} className="flex items-center gap-2 border px-6 py-2.5 rounded-lg hover:bg-gray-50 transition"><X size={16} /> Cancel</button>
@@ -99,6 +111,7 @@ export default function AdminProducts() {
               <th className="text-left px-4 py-3">Category</th>
               <th className="text-left px-4 py-3">Price</th>
               <th className="text-left px-4 py-3">Stock</th>
+              <th className="text-left px-4 py-3">WhatsApp</th>
               <th className="text-left px-4 py-3">Actions</th>
             </tr>
           </thead>
@@ -115,6 +128,9 @@ export default function AdminProducts() {
                 <td className="px-4 py-3">{Number(p.price).toLocaleString()} RWF</td>
                 <td className="px-4 py-3">
                   <span className={`font-medium ${p.stock < 5 ? "text-red-500" : "text-green-600"}`}>{p.stock}</span>
+                </td>
+                <td className="px-4 py-3">
+                  {p.whatsapp_enabled ? <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">On</span> : <span className="text-xs text-gray-300">Off</span>}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
