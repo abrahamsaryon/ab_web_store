@@ -40,12 +40,13 @@ const addProductImage = async (req, res) => {
       await pool.query("UPDATE product_images SET is_primary = 0 WHERE product_id = ?", [productId]);
     }
     const [[{ cnt }]] = await pool.query("SELECT COUNT(*) as cnt FROM product_images WHERE product_id = ?", [productId]);
+    const isPrimary = is_primary ? 1 : (cnt === 0 ? 1 : 0);
     const [result] = await pool.query(
       "INSERT INTO product_images (product_id, url, public_id, is_primary, sort_order) VALUES (?, ?, ?, ?, ?)",
-      [productId, url, public_id || null, is_primary ? 1 : (cnt === 0 ? 1 : 0), cnt]
+      [productId, url, public_id || null, isPrimary, cnt]
     );
-    // Sync primary image to products table
-    if (is_primary || cnt === 0) {
+    // Always sync primary image to products table
+    if (isPrimary) {
       await pool.query("UPDATE products SET image_url = ? WHERE id = ?", [url, productId]);
     }
     res.status(201).json({ id: result.insertId, url, public_id, is_primary });
