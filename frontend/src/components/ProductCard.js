@@ -83,7 +83,7 @@ export default function ProductCard({ product }) {
             </button>
           </div>
         </div>
-        {product.stock === 0 && <p className="text-red-500 text-xs mt-1">Out of stock</p>}
+        {product.stock === 0 ? <p className="text-red-500 text-xs mt-1">Out of stock</p> : null}
       </div>
     </div>
   );
