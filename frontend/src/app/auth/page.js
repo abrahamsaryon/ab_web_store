@@ -23,7 +23,7 @@ export default function AuthPage() {
       const res = await api.post(endpoint, payload);
       login(res.data.user, res.data.token);
       toast.success(isLogin ? "Welcome back!" : "Account created!");
-      router.push("/");
+      router.push(res.data.user.role === "admin" ? "/admin" : "/dashboard");
     } catch (err) {
       toast.error(err.response?.data?.message || "Something went wrong");
     } finally {
