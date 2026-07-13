@@ -51,17 +51,23 @@ export default function AdminProducts() {
       const res = editId
         ? await api.put(`/products/${editId}`, form)
         : await api.post("/products", form);
-      const newId = editId || res.data.id;
+      const savedId = editId || res.data.id;
+      const savedName = form.name;
       toast.success(editId ? "Product updated" : "Product added");
-      setShowForm(false); setForm(empty); setEditId(null); load();
-      // Auto-open media panel for new products
-      if (!editId) openMedia({ id: newId, name: form.name });
+      setShowForm(false); setForm(empty); setEditId(null);
+      await load();
+      // Open media panel: for new products always, for edits keep it open if already on same product
+      if (!editId || mediaProductId === savedId) {
+        openMedia({ id: savedId, name: savedName });
+      }
     } catch (err) { toast.error(err.response?.data?.message || "Failed"); }
   };
 
   const handleEdit = (p) => {
-    setForm({ name: p.name, description: p.description || "", price: p.price, stock: p.stock, image_url: p.image_url || "", category_id: p.category_id, whatsapp_enabled: !!p.whatsapp_enabled, whatsapp_number: p.whatsapp_number || "" });
+    setForm({ name: p.name, description: p.description || "", price: p.price, stock: p.stock, image_url: p.image_url || "", category_id: String(p.category_id), whatsapp_enabled: !!p.whatsapp_enabled, whatsapp_number: p.whatsapp_number || "" });
     setEditId(p.id); setShowForm(true);
+    // Close media panel if it was open for a different product
+    if (mediaProductId && mediaProductId !== p.id) setMediaProductId(null);
   };
 
   const handleDelete = async (id) => {
