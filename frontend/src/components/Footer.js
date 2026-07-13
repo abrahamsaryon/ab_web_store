@@ -35,16 +35,20 @@ export default function Footer() {
           <ul className="space-y-2 text-sm">
             <li><Link href="/" className="hover:text-white transition">Home</Link></li>
             <li><Link href="/products" className="hover:text-white transition">Products</Link></li>
-            <li><Link href="/cart" className="hover:text-white transition">Cart</Link></li>
-            <li><Link href="/orders" className="hover:text-white transition">My Orders</Link></li>
+            {user && <li><Link href="/cart" className="hover:text-white transition">Cart</Link></li>}
+            {user && <li><Link href="/orders" className="hover:text-white transition">My Orders</Link></li>}
           </ul>
         </div>
 
-        {/* Customer Service */}
+        {/* Account */}
         <div>
-          <h3 className="text-white font-semibold mb-4">Customer Service</h3>
+          <h3 className="text-white font-semibold mb-4">Account</h3>
           <ul className="space-y-2 text-sm">
-            {!user && <li><Link href="/auth" className="hover:text-white transition">Login / Register</Link></li>}
+            {!user ? (
+              <li><Link href="/auth" className="hover:text-white transition">Login / Register</Link></li>
+            ) : (
+              <li><Link href="/profile" className="hover:text-white transition">My Profile</Link></li>
+            )}
           </ul>
         </div>
 
