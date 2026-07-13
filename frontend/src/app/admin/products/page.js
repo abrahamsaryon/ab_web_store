@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { Plus, Trash2, Edit2, X, Check, Search, Star, Upload, Link as LinkIcon } from "lucide-react";
-import Image from "next/image";
 
 const empty = { name: "", description: "", price: "", stock: "", category_id: "", whatsapp_enabled: false, whatsapp_number: "" };
 const emptyVariant = { name: "", value: "", price_modifier: 0, stock: 0, image_url: "" };
@@ -343,8 +342,8 @@ export default function AdminProducts() {
             {filtered.map((p) => (
               <tr key={p.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3">
-                  <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
-                    <Image src={p.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100"} alt={p.name} fill className="object-cover" />
+                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
+                    <img src={p.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100"} alt={p.name} className="w-full h-full object-cover" />
                   </div>
                 </td>
                 <td className="px-4 py-3 font-medium">{p.name}</td>

@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart, MessageCircle } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -42,12 +41,11 @@ export default function ProductCard({ product }) {
   return (
     <div className="bg-white rounded-xl shadow hover:shadow-md transition overflow-hidden flex flex-col">
       <Link href={`/products/${product.id}`}>
-        <div className="relative h-48 w-full bg-gray-100">
-          <Image
+        <div className="relative h-48 w-full bg-gray-100 overflow-hidden">
+          <img
             src={product.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"}
             alt={product.name}
-            fill
-            className="object-cover"
+            className="w-full h-full object-cover"
           />
           {!!product.whatsapp_enabled && (
             <span className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">WhatsApp</span>
