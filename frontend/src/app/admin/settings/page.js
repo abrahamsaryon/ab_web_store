@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { User, Lock, Shield, Plus, Trash2, Edit2, X, Check, Eye, EyeOff } from "lucide-react";
 import ImageUploader from "@/components/ui/ImageUploader";
+import PasswordInput, { isStrongPassword } from "@/components/ui/PasswordInput";
 
 export default function AdminSettings() {
   const { user, login } = useAuth();
@@ -47,8 +48,8 @@ export default function AdminSettings() {
     e.preventDefault();
     if (passwords.newPassword !== passwords.confirmPassword)
       return toast.error("New passwords do not match");
-    if (passwords.newPassword.length < 6)
-      return toast.error("Password must be at least 6 characters");
+    if (!isStrongPassword(passwords.newPassword))
+      return toast.error("Password is not strong enough");
     setSaving(true);
     try {
       await api.put("/profile/password", {
@@ -151,21 +152,13 @@ export default function AdminSettings() {
         <form onSubmit={handlePasswordChange} className="bg-white rounded-xl shadow p-6 space-y-4">
           <p className="text-sm text-gray-500 mb-2">Use a strong password with at least 6 characters including letters and numbers.</p>
           {[
-            { key: "currentPassword", label: "Current Password", show: showPw.current, toggle: () => setShowPw({ ...showPw, current: !showPw.current }) },
-            { key: "newPassword", label: "New Password", show: showPw.new, toggle: () => setShowPw({ ...showPw, new: !showPw.new }) },
-            { key: "confirmPassword", label: "Confirm New Password", show: showPw.confirm, toggle: () => setShowPw({ ...showPw, confirm: !showPw.confirm }) },
-          ].map(({ key, label, show, toggle }) => (
+            { key: "currentPassword", label: "Current Password", strength: false },
+            { key: "newPassword", label: "New Password", strength: true },
+            { key: "confirmPassword", label: "Confirm New Password", strength: false },
+          ].map(({ key, label, strength }) => (
             <div key={key}>
               <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-              <div className="relative">
-                <input required type={show ? "text" : "password"} value={passwords[key]}
-                  onChange={(e) => setPasswords({ ...passwords, [key]: e.target.value })}
-                  autoComplete="new-password"
-                  className="w-full border rounded-lg px-4 py-2.5 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <button type="button" onClick={toggle} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  {show ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
+              <PasswordInput value={passwords[key]} onChange={(v) => setPasswords({ ...passwords, [key]: v })} placeholder={label} required showStrength={strength} />
             </div>
           ))}
           <button type="submit" disabled={saving}
@@ -195,10 +188,11 @@ export default function AdminSettings() {
               <input required={!editAdminId} type="email" value={adminForm.email} onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
                 placeholder="Email Address" autoComplete="off"
                 className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <input type="password" value={adminForm.password} onChange={(e) => setAdminForm({ ...adminForm, password: e.target.value })}
-                placeholder={editAdminId ? "New Password (leave blank to keep)" : "Password *"}
-                required={!editAdminId} autoComplete="new-password"
-                className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <div>
+                <PasswordInput value={adminForm.password} onChange={(v) => setAdminForm({ ...adminForm, password: v })}
+                  placeholder={editAdminId ? "New Password (leave blank to keep)" : "Password *"}
+                  required={!editAdminId} showStrength={true} />
+              </div>
               <div className="flex gap-3">
                 <button type="submit" className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition text-sm"><Check size={14} /> Save</button>
                 <button type="button" onClick={() => { setShowAdminForm(false); setEditAdminId(null); }} className="flex items-center gap-2 border px-5 py-2 rounded-lg hover:bg-gray-50 transition text-sm"><X size={14} /> Cancel</button>

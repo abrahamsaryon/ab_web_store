@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import PasswordInput, { isStrongPassword } from "@/components/ui/PasswordInput";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,6 +17,7 @@ export default function AuthPage() {
     e.preventDefault();
     if (!form.email || !form.password) return toast.error("Please fill all fields");
     if (!isLogin && !form.name) return toast.error("Name is required");
+    if (!isLogin && !isStrongPassword(form.password)) return toast.error("Password is not strong enough");
     setLoading(true);
     try {
       const endpoint = isLogin ? "/auth/login" : "/auth/register";
@@ -43,8 +45,14 @@ export default function AuthPage() {
           )}
           <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
             placeholder="Email" className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <input required type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
-            placeholder="Password" className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <PasswordInput
+            value={form.password}
+            onChange={(v) => setForm({ ...form, password: v })}
+            placeholder="Password"
+            required
+            showStrength={!isLogin}
+            autoComplete={isLogin ? "current-password" : "new-password"}
+          />
           <button type="submit" disabled={loading}
             className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition disabled:opacity-60">
             {loading ? "Please wait..." : isLogin ? "Sign In" : "Create Account"}

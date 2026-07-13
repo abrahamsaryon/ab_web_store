@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const pool = require("../config/db");
+const { isStrongPassword } = require("./authController");
 
 const getProfile = async (req, res) => {
   try {
@@ -27,8 +28,8 @@ const changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   if (!currentPassword || !newPassword)
     return res.status(400).json({ message: "Both current and new password are required" });
-  if (newPassword.length < 6)
-    return res.status(400).json({ message: "New password must be at least 6 characters" });
+  if (!isStrongPassword(newPassword))
+    return res.status(400).json({ message: "Password must be at least 8 characters and include uppercase, lowercase, number, and special character." });
   try {
     const [[user]] = await pool.query("SELECT password FROM users WHERE id = ?", [req.user.id]);
     const valid = await bcrypt.compare(currentPassword, user.password);

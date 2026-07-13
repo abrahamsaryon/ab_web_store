@@ -4,7 +4,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
-import { Search, Plus, Edit2, Trash2, X, Check, User, Eye } from "lucide-react";
+import { Search, Plus, Edit2, Trash2, X, Check, User, Eye, Ban, CheckCircle } from "lucide-react";
+import PasswordInput from "@/components/ui/PasswordInput";
 
 const empty = { name: "", email: "", password: "", role: "customer" };
 
@@ -68,6 +69,14 @@ export default function AdminCustomers() {
     setViewUser(res.data);
   };
 
+  const handleToggleStatus = async (id) => {
+    try {
+      const res = await api.patch(`/users/${id}/status`);
+      toast.success(res.data.message);
+      load();
+    } catch (err) { toast.error(err.response?.data?.message || "Failed"); }
+  };
+
   const filtered = users.filter((u) =>
     u.role === "customer" &&
     (!search || u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()))
@@ -100,10 +109,11 @@ export default function AdminCustomers() {
             placeholder="Full Name" autoComplete="off" className="border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
             placeholder="Email Address" autoComplete="off" className="border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
-            placeholder={editId ? "New Password (leave blank to keep)" : "Password *"}
-            required={!editId} autoComplete="new-password"
-            className="border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <div className="md:col-span-2">
+            <PasswordInput value={form.password} onChange={(v) => setForm({ ...form, password: v })}
+              placeholder={editId ? "New Password (leave blank to keep)" : "Password *"}
+              required={!editId} showStrength={true} />
+          </div>
           <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}
             className="border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="customer">Customer</option>
@@ -177,6 +187,7 @@ export default function AdminCustomers() {
               <th className="text-left px-4 py-3">Email</th>
               <th className="text-left px-4 py-3">Role</th>
               <th className="text-left px-4 py-3">Joined</th>
+              <th className="text-left px-4 py-3">Status</th>
               <th className="text-left px-4 py-3">Actions</th>
             </tr>
           </thead>
@@ -197,9 +208,18 @@ export default function AdminCustomers() {
                 </td>
                 <td className="px-4 py-3 text-gray-500">{new Date(u.created_at).toLocaleDateString()}</td>
                 <td className="px-4 py-3">
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${u.status === 'suspended' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700'}`}>
+                    {u.status || 'active'}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <button onClick={() => handleView(u.id)} className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition" title="View"><Eye size={15} /></button>
                     <button onClick={() => handleEdit(u)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Edit"><Edit2 size={15} /></button>
+                    <button onClick={() => handleToggleStatus(u.id)} title={u.status === 'suspended' ? 'Activate' : 'Suspend'}
+                      className={`p-1.5 rounded-lg transition ${u.status === 'suspended' ? 'text-green-600 hover:bg-green-50' : 'text-orange-500 hover:bg-orange-50'}`}>
+                      {u.status === 'suspended' ? <CheckCircle size={15} /> : <Ban size={15} />}
+                    </button>
                     <button onClick={() => handleDelete(u.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition" title="Delete"><Trash2 size={15} /></button>
                   </div>
                 </td>

@@ -2,10 +2,15 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const pool = require("../config/db");
 
+const isStrongPassword = (pw) =>
+  pw.length >= 8 && /[A-Z]/.test(pw) && /[a-z]/.test(pw) && /[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw);
+
 const register = async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password)
     return res.status(400).json({ message: "All fields are required" });
+  if (!isStrongPassword(password))
+    return res.status(400).json({ message: "Password must be at least 8 characters and include uppercase, lowercase, number, and special character." });
 
   try {
     const [existing] = await pool.query("SELECT id FROM users WHERE email = ?", [email]);
@@ -33,6 +38,9 @@ const login = async (req, res) => {
     if (!rows.length) return res.status(401).json({ message: "Invalid credentials" });
 
     const user = rows[0];
+    if (user.status === "suspended")
+      return res.status(403).json({ message: "Your account has been suspended. Please contact support." });
+
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(401).json({ message: "Invalid credentials" });
 
@@ -43,4 +51,4 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+module.exports = { register, login, isStrongPassword };

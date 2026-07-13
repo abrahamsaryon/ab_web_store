@@ -4,7 +4,7 @@ const pool = require("../config/db");
 const getUsers = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      "SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC"
+      "SELECT id, name, email, role, status, created_at FROM users ORDER BY created_at DESC"
     );
     res.json(rows);
   } catch (err) {
@@ -15,7 +15,7 @@ const getUsers = async (req, res) => {
 const getUser = async (req, res) => {
   try {
     const [[user]] = await pool.query(
-      "SELECT id, name, email, role, created_at FROM users WHERE id = ?",
+      "SELECT id, name, email, role, status, created_at FROM users WHERE id = ?",
       [req.params.id]
     );
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -79,4 +79,17 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, getUser, createUser, updateUser, deleteUser };
+const toggleStatus = async (req, res) => {
+  try {
+    const [[u]] = await pool.query("SELECT status FROM users WHERE id = ?", [req.params.id]);
+    if (!u) return res.status(404).json({ message: "User not found" });
+    if (req.params.id == req.user.id) return res.status(400).json({ message: "Cannot suspend your own account" });
+    const newStatus = u.status === "active" ? "suspended" : "active";
+    await pool.query("UPDATE users SET status = ? WHERE id = ?", [newStatus, req.params.id]);
+    res.json({ message: `User ${newStatus}`, status: newStatus });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { getUsers, getUser, createUser, updateUser, deleteUser, toggleStatus };
