@@ -43,7 +43,8 @@ export default function ProductCard({ product }) {
       <Link href={`/products/${product.id}`}>
         <div className="relative aspect-[16/9] sm:aspect-[4/3] w-full bg-gray-100 overflow-hidden">
           <img
-            src={product.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"}
+            src={product.image_url || ""}
+            onError={(e) => { e.target.src = "/placeholder.svg"; }}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />

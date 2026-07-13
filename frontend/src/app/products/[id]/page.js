@@ -144,7 +144,8 @@ export default function ProductDetailPage() {
         <div className="flex flex-col gap-3">
           <div className="aspect-[16/9] sm:aspect-[4/3] w-full rounded-xl overflow-hidden bg-gray-100">
             <img
-              src={activeImage || product.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"}
+              src={activeImage || product.image_url || ""}
+              onError={(e) => { e.target.src = "/placeholder.svg"; }}
               alt={product.name} className="w-full h-full object-cover" />
           </div>
           {productImages.length > 1 && (
