@@ -22,10 +22,11 @@ export default function AdminProducts() {
 
   // Images state (within form)
   const [images, setImages] = useState([]);
-  const [imgTab, setImgTab] = useState("url");
+  const [imgTab, setImgTab] = useState("upload");
   const [imgUrl, setImgUrl] = useState("");
   const [imgFiles, setImgFiles] = useState([]);
   const [imgUploading, setImgUploading] = useState(false);
+  const [imgDragging, setImgDragging] = useState(false);
   const fileRef = useRef();
 
   // Variants state (within form)
@@ -247,17 +248,26 @@ export default function AdminProducts() {
                 </div>
                 <div className="border rounded-lg p-4">
                   <div className="flex gap-2 mb-3">
-                    <button type="button" onClick={() => setImgTab("url")} className={`text-sm px-3 py-1 rounded-lg flex items-center gap-1 ${imgTab === "url" ? "bg-blue-600 text-white" : "border hover:bg-gray-50"}`}><LinkIcon size={13} /> URL</button>
                     <button type="button" onClick={() => setImgTab("upload")} className={`text-sm px-3 py-1 rounded-lg flex items-center gap-1 ${imgTab === "upload" ? "bg-blue-600 text-white" : "border hover:bg-gray-50"}`}><Upload size={13} /> Upload</button>
+                    <button type="button" onClick={() => setImgTab("url")} className={`text-sm px-3 py-1 rounded-lg flex items-center gap-1 ${imgTab === "url" ? "bg-blue-600 text-white" : "border hover:bg-gray-50"}`}><LinkIcon size={13} /> URL</button>
                   </div>
                   {imgTab === "url" ? (
                     <input value={imgUrl} onChange={(e) => setImgUrl(e.target.value)} placeholder="https://..." className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2" />
                   ) : (
-                    <div className="mb-2">
+                    <div className="mb-2"
+                      onDragOver={(e) => { e.preventDefault(); setImgDragging(true); }}
+                      onDragLeave={() => setImgDragging(false)}
+                      onDrop={(e) => { e.preventDefault(); setImgDragging(false); setImgFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"))); }}>
                       <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => setImgFiles(Array.from(e.target.files))} />
-                      <button type="button" onClick={() => fileRef.current.click()} className="border rounded-lg px-3 py-2 text-sm hover:bg-gray-50 w-full text-left text-gray-500">
-                        {imgFiles.length > 0 ? `${imgFiles.length} file${imgFiles.length > 1 ? "s" : ""} selected` : "Choose image file(s)..."}
-                      </button>
+                      <div onClick={() => fileRef.current.click()}
+                        className={`border-2 border-dashed rounded-lg px-4 py-6 text-center cursor-pointer transition ${
+                          imgDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
+                        }`}>
+                        <Upload size={20} className="mx-auto mb-1 text-gray-400" />
+                        <p className="text-sm text-gray-500">
+                          {imgFiles.length > 0 ? `${imgFiles.length} file${imgFiles.length > 1 ? "s" : ""} selected` : "Drag & drop or click — select multiple"}
+                        </p>
+                      </div>
                     </div>
                   )}
                   <button type="button" onClick={handleAddImage} disabled={imgUploading} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition disabled:opacity-60">
