@@ -56,6 +56,17 @@ export default function AdminDashboard() {
     ]).then(([s, o]) => {
       setStats(s.data);
       setRecentOrders((o.data || []).slice(0, 5));
+    }).catch(() => {
+      // fallback: derive stats from orders list
+      api.get("/orders").then((o) => {
+        const orders = o.data || [];
+        const revenue = orders.reduce((s, o) => s + Number(o.total_amount), 0);
+        const customers = new Set(orders.map((o) => o.user_id)).size;
+        const statusCounts = { pending: 0, confirmed: 0, shipped: 0, delivered: 0, cancelled: 0 };
+        orders.forEach((o) => { if (statusCounts[o.status] !== undefined) statusCounts[o.status]++; });
+        setStats({ products: 0, orders: orders.length, revenue, customers, statusCounts, daily: [] });
+        setRecentOrders(orders.slice(0, 5));
+      });
     }).finally(() => setLoading(false));
   }, [user]);
 
