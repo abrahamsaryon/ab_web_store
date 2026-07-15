@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
-import { Search } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 const statusColors = {
   pending: "bg-yellow-100 text-yellow-700",
@@ -14,18 +14,24 @@ const statusColors = {
   cancelled: "bg-red-100 text-red-700",
 };
 
+const PAGE_SIZE = 15;
+
 export default function AdminOrders() {
   const { user } = useAuth();
   const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     if (!user) { router.push("/auth"); return; }
     if (user.role !== "admin") { router.push("/"); return; }
     api.get("/orders").then((r) => setOrders(r.data || []));
   }, [user]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => { setPage(1); }, [search, filter]);
 
   const handleStatus = async (id, status) => {
     await api.put(`/orders/${id}/status`, { status });
@@ -38,6 +44,9 @@ export default function AdminOrders() {
     const matchFilter = !filter || o.status === filter;
     return matchSearch && matchFilter;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div>
@@ -78,7 +87,7 @@ export default function AdminOrders() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {filtered.map((o) => (
+            {paginated.map((o) => (
               <tr key={o.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium">#{o.id}</td>
                 <td className="px-4 py-3">{o.customer_name || "Guest"}<br /><span className="text-xs text-gray-400">{o.email}</span></td>
@@ -96,6 +105,33 @@ export default function AdminOrders() {
           </tbody>
         </table>
         {filtered.length === 0 && <p className="text-center text-gray-400 py-10">No orders found</p>}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
+            <p className="text-sm text-gray-500">
+              Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+            </p>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
+                className="p-1.5 rounded-lg border hover:bg-gray-100 disabled:opacity-40"><ChevronLeft size={16} /></button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                .reduce((acc, p, idx, arr) => {
+                  if (idx > 0 && p - arr[idx - 1] > 1) acc.push("...");
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, i) =>
+                  p === "..." ? <span key={`e${i}`} className="px-2 text-gray-400">…</span> :
+                  <button key={p} onClick={() => setPage(p)}
+                    className={`w-8 h-8 rounded-lg text-sm ${page === p ? "bg-blue-600 text-white" : "border hover:bg-gray-100"}`}>{p}</button>
+                )}
+              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                className="p-1.5 rounded-lg border hover:bg-gray-100 disabled:opacity-40"><ChevronRight size={16} /></button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

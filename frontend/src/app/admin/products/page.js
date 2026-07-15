@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
-import { Plus, Trash2, Edit2, X, Check, Search, Star, Upload, Link as LinkIcon } from "lucide-react";
+import { Plus, Trash2, Edit2, X, Check, Search, Star, Upload, Link as LinkIcon, ChevronLeft, ChevronRight } from "lucide-react";
 
 const empty = { name: "", description: "", price: "", stock: "", category_id: "", whatsapp_enabled: false, whatsapp_number: "" };
 const emptyVariant = { name: "", value: "", price_modifier: 0, stock: 0, image_url: "" };
@@ -19,6 +19,9 @@ export default function AdminProducts() {
   const [editId, setEditId] = useState(null);
   const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const PAGE_SIZE = 15;
 
   // Images state (within form)
   const [images, setImages] = useState([]);
@@ -38,12 +41,22 @@ export default function AdminProducts() {
   useEffect(() => {
     if (!user) { router.push("/auth"); return; }
     if (user.role !== "admin") { router.push("/"); return; }
-    load();
+    load(1);
   }, [user]);
 
-  const load = async () => {
-    const [p, c] = await Promise.all([api.get("/products?limit=100"), api.get("/categories")]);
+  // Search with debounce
+  useEffect(() => {
+    const t = setTimeout(() => { setPage(1); load(1); }, 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const load = async (pg = page) => {
+    const [p, c] = await Promise.all([
+      api.get(`/products?limit=${PAGE_SIZE}&page=${pg}${search ? `&search=${encodeURIComponent(search)}` : ""}`),
+      api.get("/categories"),
+    ]);
     setProducts(p.data.products || []);
+    setTotalPages(p.data.pages || 1);
     setCategories(c.data || []);
   };
 
@@ -90,7 +103,7 @@ export default function AdminProducts() {
         setEditId(savedId);
       }
       toast.success(editId ? "Product updated" : "Product saved — now add images & variants below");
-      await load();
+      await load(page);
     } catch (err) { toast.error(err.response?.data?.message || "Failed"); }
     finally { setSaving(false); }
   };
@@ -120,7 +133,7 @@ export default function AdminProducts() {
       setImgUrl(""); setImgFiles([]);
       const imgs = await api.get(`/products/${editId}/images`);
       setImages(imgs.data);
-      await load();
+      await load(page);
     } catch (err) { toast.error(err.response?.data?.message || "Upload failed"); }
     finally { setImgUploading(false); }
   };
@@ -129,7 +142,7 @@ export default function AdminProducts() {
     await api.put(`/products/${editId}/images/${imageId}/primary`);
     const imgs = await api.get(`/products/${editId}/images`);
     setImages(imgs.data);
-    await load();
+    await load(page);
     toast.success("Primary image set");
   };
 
@@ -137,7 +150,7 @@ export default function AdminProducts() {
     await api.delete(`/products/${editId}/images/${imageId}`);
     const imgs = await api.get(`/products/${editId}/images`);
     setImages(imgs.data);
-    await load();
+    await load(page);
     toast.success("Image removed");
   };
 
@@ -170,10 +183,10 @@ export default function AdminProducts() {
 
   const handleDelete = async (id) => {
     if (!confirm("Delete this product?")) return;
-    await api.delete(`/products/${id}`); toast.success("Deleted"); load();
+    await api.delete(`/products/${id}`); toast.success("Deleted"); load(page);
   };
 
-  const filtered = products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = products;
 
   return (
     <div>
@@ -375,6 +388,31 @@ export default function AdminProducts() {
           </tbody>
         </table>
         {filtered.length === 0 && <p className="text-center text-gray-400 py-10">No products found</p>}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
+            <p className="text-sm text-gray-500">Page {page} of {totalPages}</p>
+            <div className="flex items-center gap-1">
+              <button onClick={() => { const p = Math.max(1, page - 1); setPage(p); load(p); }} disabled={page === 1}
+                className="p-1.5 rounded-lg border hover:bg-gray-100 disabled:opacity-40"><ChevronLeft size={16} /></button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                .reduce((acc, p, idx, arr) => {
+                  if (idx > 0 && p - arr[idx - 1] > 1) acc.push("...");
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, i) =>
+                  p === "..." ? <span key={`e${i}`} className="px-2 text-gray-400">…</span> :
+                  <button key={p} onClick={() => { setPage(p); load(p); }}
+                    className={`w-8 h-8 rounded-lg text-sm ${page === p ? "bg-blue-600 text-white" : "border hover:bg-gray-100"}`}>{p}</button>
+                )}
+              <button onClick={() => { const p = Math.min(totalPages, page + 1); setPage(p); load(p); }} disabled={page === totalPages}
+                className="p-1.5 rounded-lg border hover:bg-gray-100 disabled:opacity-40"><ChevronRight size={16} /></button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

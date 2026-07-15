@@ -123,4 +123,47 @@ const createWhatsappOrder = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, getMyOrders, getOrderById, getAllOrders, updateOrderStatus, createWhatsappOrder };
+const getAdminStats = async (req, res) => {
+  try {
+    const [[{ total_products }]] = await pool.query("SELECT COUNT(*) as total_products FROM products");
+    const [orders] = await pool.query("SELECT id, user_id, total_amount, status, created_at FROM orders");
+    const revenue = orders.reduce((s, o) => s + Number(o.total_amount), 0);
+    const customers = new Set(orders.map((o) => o.user_id)).size;
+
+    const statusCounts = { pending: 0, confirmed: 0, shipped: 0, delivered: 0, cancelled: 0 };
+    orders.forEach((o) => { if (statusCounts[o.status] !== undefined) statusCounts[o.status]++; });
+
+    // Revenue per day for last 30 days
+    const [dailyRows] = await pool.query(
+      `SELECT DATE(created_at) as date, SUM(total_amount) as revenue
+       FROM orders
+       WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)
+       GROUP BY DATE(created_at)
+       ORDER BY date ASC`
+    );
+
+    // Fill in missing days with 0
+    const dailyMap = {};
+    dailyRows.forEach((r) => { dailyMap[r.date.toISOString().slice(0, 10)] = Number(r.revenue); });
+    const daily = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      daily.push({ date: key, revenue: dailyMap[key] || 0 });
+    }
+
+    res.json({
+      products: total_products,
+      orders: orders.length,
+      revenue,
+      customers,
+      statusCounts,
+      daily,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { createOrder, getMyOrders, getOrderById, getAllOrders, updateOrderStatus, createWhatsappOrder, getAdminStats };
